@@ -15,9 +15,12 @@ default_args = {
 }
 
 dag = DAG('test_dag',
-          schedule_interval='@daily',
+          schedule_interval='@hourly',
           default_args=default_args,
-          catchup=False)
+          catchup=False
+)
+
+print(os.environ)
 
 with dag:
     dummy_start = dummy_operator.DummyOperator(task_id='kickoff_dag')
@@ -26,8 +29,9 @@ with dag:
         task_id='copy-to-gcs',
         name='copy-to-gcs',
         namespace='default',
-        image='gcr.io/dataeng-code/code:{branch_name}'.format(branch_name=os.environ.get('ENV')),
-        cmds=['python', 'code/sqlserver/copy_to_gcs.py'],
+        image_pull_policy='Always',
+        image='gcr.io/dataeng-code/code:0.0.4',
+        cmds=['python', 'dataeng_code/sqlserver/copy_to_gcs.py'],
         arguments=[]
     )
 
